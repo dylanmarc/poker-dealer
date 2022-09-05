@@ -83,12 +83,6 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
         var socket = io();
-        
-        function displayCards(cards){
-          return cards.map((card) => {
-            return `<div class="card ${card.suit}">${card.value}${card.suit}</div>`
-          })
-        }
 
         socket.on('hand', (cards) => {
           $('#hand').html(displayCards(cards))
@@ -101,12 +95,37 @@
         //   $('#community-hand').html(JSON.stringify(community_hand))
         // });
 
+        socket.on('remember_player', (info) => {
+          let socketID = info.socketID;
+          let hands = info.hands;
+
+          let existing_info = JSON.parse(sessionStorage.getItem('initial_info'));
+
+          if(existing_info){
+            existing_info['currentID'] = socketID;
+            console.log(hands)
+          }else{
+            existing_info = {
+              initialID: socketID,
+              currentID: socketID
+            }
+          }
+          sessionStorage.setItem('initial_info', JSON.stringify(existing_info));
+        })
+
+
         $('#deal').click(() => {
           socket.emit('deal')
         })
         $('#draw').click(() => {
           socket.emit('draw')
         })
+
+        function displayCards(cards){
+          return cards.map((card) => {
+            return `<div class="card ${card.suit}">${card.value}${card.suit}</div>`
+          })
+        }
     </script>
   </body>
 </html>

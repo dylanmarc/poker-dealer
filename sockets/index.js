@@ -28,6 +28,8 @@ var community_hand = { cards:[ ] };
 
 io.on('connection', (socket) => {
 
+    // socket.emit('remember_player', {socketID: socket.id, hands});
+    
     socket.emit('community_hand', community_hands.last_draw);
     
     socket.on('deal', () => {
@@ -55,6 +57,9 @@ io.on('connection', (socket) => {
                 }
                 // remember hand
                 hands.push(hand);
+
+                //remember players at the table using sessionstorage
+                // sessionStorage.setItem('initialID', player);
 
                 //send player their hand
                 io.to(player).emit('hand', hand.cards);
