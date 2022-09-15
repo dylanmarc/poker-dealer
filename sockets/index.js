@@ -27,12 +27,35 @@ let round = 0;
 var community_hand = { cards:[ ] };
 
 io.on('connection', (socket) => {
+    let client;
+    // Here you handle the `connected` event
+    socket.on('connected', (client) => {
+        // And now you can handle this clientUuid
+        client = client;
+        console.log(client)
+        console.log(hands)
 
-    // socket.emit('remember_player', {socketID: socket.id, hands});
+        //find currently dealt hand
+        let dealt_hand = hands.find(hand => hand.id == client.uuid)
+
+        //id player has hand connected to uuid, send player their hand
+        if(dealt_hand){
+            console.log(hands[client.uuid])
+            io.to(client.socketid).emit('hand', dealt_hand.cards);
+        }
+    });
+
+        // socket.emit('remember_player', {socketID: socket.id, hands});
     
     socket.emit('community_hand', community_hands.last_draw);
     
     socket.on('deal', () => {
+        //resets clients hands
+        hands = [];
+        //resets community hands last draw
+        community_hands.last_draw = [];
+        
+
         //reset to round 0 (pre-flop)
         round = 0;
         //count hands played
@@ -55,8 +78,6 @@ io.on('connection', (socket) => {
                 for (let i = 0; i < 2; i++) {
                     hand.cards.push(pickCard(active_deck));
                 }
-                // remember hand
-                hands.push(hand);
 
                 //remember players at the table using sessionstorage
                 // sessionStorage.setItem('initialID', player);
@@ -76,8 +97,11 @@ io.on('connection', (socket) => {
 
         // remember hand
         community_hands.history.push(community_hand);
+    })
 
-        
+    socket.on('dealt', (clientHand) => {
+        // remember hands dealt
+        hands.push(clientHand);
     })
 
     socket.on('draw', () => {
@@ -112,7 +136,7 @@ io.on('connection', (socket) => {
 
 
         // remove player
-        hands = hands.filter((hand) => hand.socket !== socket);
+        // hands = hands.filter((hand) => hand.socket !== socket);
     });
 });
 
